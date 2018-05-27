@@ -1,6 +1,6 @@
 #!/bin/sh
 
-W=320
+W=160
 
 mkdir -p PNG
 for i in SVG/*.svg; do
