@@ -1,0 +1,20 @@
+= Install SDL
+
+SDL must be installed manually on Raspi, otherwise it doesn't work without X.
+
+* Download from https://www.libsdl.org/download-2.0.php
+* tar zxvf SDL2-2.0.3.tar.gz
+* cd SDL2-2.0.3 && mkdir build && cd build
+* ../configure --host=armv7l-raspberry-linux-gnueabihf --disable-pulseaudio --disable-esd --disable-video-mir --disable-video-wayland --disable-video-x11 --disable-video-opengl
+* make -j4 && make install
+
+Download and install SDL_image and SDL_ttf (without configure flags).
+
+== Note for SDL_ttf:
+* fails to link in the end due to missing libGL.so, just created manual link
+** cd /usr/lib/arm-linux-gnueabihf/
+** sudo ln -s libGL.so.1 libGL.so
+
+In general, disable full OpenGL, otherwise SDL fails to initialize:
+* sudo raspi-config
+* Advanced -> GL Driver -> GL (Fake KMS)
