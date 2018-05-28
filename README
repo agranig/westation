@@ -36,3 +36,11 @@ In general, disable full OpenGL, otherwise SDL fails to initialize:
 
 == Remove SVG elemement and convert to PNG
 * westation/assets/meteocons-icons/svg2png.sh
+
+= Query openweathermap API
+```
+KEY=$(cat etc/openweathermap.key | tr -d "\n");
+curl "https://api.openweathermap.org/data/2.5/weather?APPID=$KEY&zip=1100,AT&units=metric&lang=de";
+echo
+```
+* https://openweathermap.org/weather-conditions
