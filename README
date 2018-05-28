@@ -18,3 +18,18 @@ Download and install SDL_image and SDL_ttf (without configure flags).
 In general, disable full OpenGL, otherwise SDL fails to initialize:
 * sudo raspi-config
 * Advanced -> GL Driver -> GL (Fake KMS)
+
+= Resources
+
+== Install LCD shield
+* https://www.waveshare.com/wiki/3.5inch_RPi_LCD_(A)
+
+== Compile SDL for RasPi non-X
+* https://solarianprogrammer.com/2015/01/22/raspberry-pi-raspbian-getting-started-sdl-2/
+
+== Weather Icons
+* http://www.alessioatzeni.com/meteocons/
+
+== Batch-Convert SVG to PNG on Mac with proper transparency
+* rsvg-convert -h 160 SVG/5.svg > PNG/5.png
+** via ```brew install librsvg```
