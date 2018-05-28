@@ -33,3 +33,6 @@ In general, disable full OpenGL, otherwise SDL fails to initialize:
 == Batch-Convert SVG to PNG on Mac with proper transparency
 * rsvg-convert -h 160 SVG/5.svg > PNG/5.png
 ** via ```brew install librsvg```
+
+== Remove SVG elemement and convert to PNG
+* westation/assets/meteocons-icons/svg2png.sh
