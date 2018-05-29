@@ -252,6 +252,7 @@ int weather_get(weather_info_t *info) {
     CURLcode res;
     struct json_object *json_root;
     struct json_object *json_sys;
+    struct json_object *json_main;
     struct json_object *json_weathers;
     struct json_tokener *json_tok = NULL;
     weather_buffer_t buffer = {NULL, 0};
@@ -390,6 +391,45 @@ int weather_get(weather_info_t *info) {
         info->time = weather_sunrise_to_time(sunrise, sunset, time(NULL));
     } else {
         fprintf(stderr, "Key 'sys' not found in API response\n");
+        goto err;
+    }
+
+    if (json_object_object_get_ex(json_root, "main", &json_main)) {
+        json_object *json_sys_temp;
+        json_object *json_sys_humidity;
+        if (json_object_object_get_ex(json_main, "temp", &json_sys_temp)) {
+            if (!json_object_is_type(json_sys_temp, json_type_double)) {
+                fprintf(stderr, "Key 'main.temp' is not a double\n");
+                goto err;
+            }
+            errno = 0;
+            info->temperature = json_object_get_int(json_sys_temp);
+            if (info->temperature == 0 && errno) {
+                fprintf(stderr, "Failed to get key 'main.temp'\n");
+                goto err;
+            }
+        } else {
+            fprintf(stderr, "Key 'main.temp' not found in API response\n");
+            goto err;
+        }
+
+        if (json_object_object_get_ex(json_main, "humidity", &json_sys_humidity)) {
+            if (!json_object_is_type(json_sys_humidity, json_type_int)) {
+                fprintf(stderr, "Key 'main.humidity' is not an double\n");
+                goto err;
+            }
+            errno = 0;
+            info->humidity = json_object_get_double(json_sys_humidity);
+            if (info->humidity == 0 && errno) {
+                fprintf(stderr, "Failed to get key 'main.humidity'\n");
+                goto err;
+            }
+        } else {
+            fprintf(stderr, "Key 'main.humidity' not found in API response\n");
+            goto err;
+        }
+    } else {
+        fprintf(stderr, "Key 'main' not found in API response\n");
         goto err;
     }
 

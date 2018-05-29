@@ -6,7 +6,8 @@ void eventloop_run() {
 
     while (!quit) {
         while (SDL_PollEvent(&e)) {
-           if (e.type == SDL_QUIT) {
+           if (e.type == SDL_QUIT ||
+               (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_q)) {
               quit = 1;
            }
         } 

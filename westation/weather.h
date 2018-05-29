@@ -26,6 +26,8 @@ typedef struct weather_info {
     weather_time_t time;
     char *description;
     char *icon;
+    double temperature;
+    unsigned int humidity;
 } weather_info_t;
 
 int weather_init(const char* key, const char* zip, const char* country,
