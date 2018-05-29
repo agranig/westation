@@ -160,7 +160,7 @@ static SDL_Texture* display_load_image_texture(const char* fname, SDL_Renderer *
     return texture;
 }
 
-static int display_center_texture(SDL_Texture *texture, SDL_Rect *rect) {
+static int display_position_texture_center(SDL_Texture *texture, SDL_Rect *rect) {
     if (!texture) {
         fprintf(stderr, "Invalid NULL texture param for display_center_texture\n");
         return -1;
@@ -181,14 +181,33 @@ static int display_center_texture(SDL_Texture *texture, SDL_Rect *rect) {
     return 0;
 }
 
-int display_show(const char* icon_path, const char* text) {
+static int display_position_texture(SDL_Texture *texture, int x, int y, SDL_Rect *rect) {
+
+    if (display_position_texture_center(texture, rect) != 0) {
+        return -1;
+    }
+    rect->x = x;
+    rect->y = y;
+
+    return 0;
+}
+
+// TODO: make generic!
+int display_show(const char* icon_path, const char* text, int temp, int hum) {
     SDL_Rect icon_rect;
     SDL_Rect font_rect;
+
+    SDL_Rect temp_rect;
+    SDL_Rect hum_rect;
+    char buffer[128];
 
     SDL_Color font_color = {0, 0, 0};
     TTF_Font* font = NULL;
     SDL_Texture *font_texture = NULL;
     SDL_Texture *icon_texture = NULL;
+
+    SDL_Texture *temp_texture = NULL;
+    SDL_Texture *hum_texture = NULL;
 
     SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
 
@@ -196,7 +215,7 @@ int display_show(const char* icon_path, const char* text) {
     if (!icon_texture) {
         goto err;
     }
-    if (display_center_texture(icon_texture, &icon_rect) != 0) {
+    if (display_position_texture_center(icon_texture, &icon_rect) != 0) {
         fprintf(stderr, "Failed to center icon texture\n");
     }
 
@@ -211,16 +230,40 @@ int display_show(const char* icon_path, const char* text) {
     if (!font_texture) {
         goto err;
     }
-    if (display_center_texture(font_texture, &font_rect) != 0) {
+    if (display_position_texture_center(font_texture, &font_rect) != 0) {
         fprintf(stderr, "Failed to center font texture\n");
     }
     font_rect.y += icon_rect.h / 2 + 20;
 
+    snprintf(buffer, sizeof(buffer), "%d°C", temp);
+    temp_texture = display_load_font_texture(buffer, font, &font_color, g_renderer);
+    if (!temp_texture) {
+        goto err;
+    }
+    if (display_position_texture(temp_texture, 50, 50, &temp_rect) != 0) {
+        fprintf(stderr, "Failed to position texture\n");
+    }
+
+    snprintf(buffer, sizeof(buffer), "%d%%", hum);
+    hum_texture = display_load_font_texture(buffer, font, &font_color, g_renderer);
+    if (!hum_texture) {
+        goto err;
+    }
+    if (display_position_texture(hum_texture, 0, 50, &hum_rect) != 0) {
+        fprintf(stderr, "Failed to position texture\n");
+    }
+    hum_rect.x = g_display_w - hum_rect.w - 50;
+
+
     SDL_RenderClear(g_renderer);
     SDL_RenderCopy(g_renderer, icon_texture, NULL, &icon_rect);
     SDL_RenderCopy(g_renderer, font_texture, NULL, &font_rect);
+    SDL_RenderCopy(g_renderer, temp_texture, NULL, &temp_rect);
+    SDL_RenderCopy(g_renderer, hum_texture, NULL, &hum_rect);
     SDL_RenderPresent(g_renderer);
 
+    SDL_DestroyTexture(temp_texture);
+    SDL_DestroyTexture(hum_texture);
     SDL_DestroyTexture(font_texture);
     SDL_DestroyTexture(icon_texture);
     TTF_CloseFont(font);
@@ -228,6 +271,10 @@ int display_show(const char* icon_path, const char* text) {
     return 0;
 
 err:
+    if (temp_texture)
+        SDL_DestroyTexture(temp_texture);
+    if (hum_texture)
+        SDL_DestroyTexture(hum_texture);
     if (font_texture)
         SDL_DestroyTexture(font_texture);
     if (icon_texture)

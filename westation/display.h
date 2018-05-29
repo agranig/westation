@@ -5,6 +5,6 @@ int display_init(const char *name, int w, int h);
 
 void display_destroy();
 
-int display_show(const char* icon_path, const char* text);
+int display_show(const char* icon_path, const char* text, int temp, int hum);
 
 #endif // _DISPLAY_H

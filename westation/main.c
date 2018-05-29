@@ -15,7 +15,7 @@ int g_quit = 0;
 static void* run_weather(void *ptr) {
     weather_info_t info;
     int quit = 0;
-    int query_interval_us = 10000000;
+    int query_interval_us = 60000000;
     int pause_us = 100000;
     int runtime = query_interval_us;
 
@@ -43,7 +43,7 @@ static void* run_weather(void *ptr) {
             );
 
             pthread_mutex_lock(&g_lock);
-            if (display_show(info.icon, info.description) != 0) {
+            if (display_show(info.icon, info.description, info.temperature, info.humidity) != 0) {
                 fprintf(stderr, "failed to render display\n");
                 pthread_mutex_unlock(&g_lock);
                 goto err;
@@ -55,7 +55,7 @@ static void* run_weather(void *ptr) {
 
 err:
             pthread_mutex_lock(&g_lock);
-            if (display_show(ICON_NA_PATH, "Weather API Error") != 0) {
+            if (display_show(ICON_NA_PATH, "Weather API Error", 0, 0) != 0) {
                 fprintf(stderr, "failed to render display\n");
                 pthread_mutex_unlock(&g_lock);
                 goto err;
@@ -102,7 +102,7 @@ int main(int argc, const char** argv) {
 
     // TODO: use another mutex inside display_show to avoid manual locking
     pthread_mutex_lock(&g_lock);
-    if (display_show(ICON_INIT_PATH, "Initializing...") != 0) {
+    if (display_show(ICON_INIT_PATH, "Initializing...", 0, 0) != 0) {
         fprintf(stderr, "Failed to render display\n");
         pthread_mutex_unlock(&g_lock);
         goto out;
