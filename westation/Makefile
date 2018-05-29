@@ -1,5 +1,5 @@
 all:
-	gcc -o weather weather.c -lcurl -ljson-c
+	gcc -o westation main.c weather.c -lcurl -ljson-c
 
 clean:
-	rm -f weather
+	rm -f westation
