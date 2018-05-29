@@ -35,6 +35,8 @@ int weather_init(const char* key, const char* zip, const char* country,
 
 void weather_destroy();
 
+weather_info_t* weather_dup_info(weather_info_t *info);
+
 void weather_destroy_info(weather_info_t *info);
 
 int weather_get(weather_info_t *info);

@@ -52,6 +52,43 @@ void weather_destroy() {
     curl_global_cleanup();
 }
 
+weather_info_t* weather_dup_info(weather_info_t *info) {
+    weather_info_t *new_info;
+
+    if (!info)
+        return NULL;
+
+    new_info = malloc(sizeof(weather_info_t));
+    if (!new_info) {
+        fprintf(stderr, "Failed to allocate weather info dup memory\n");
+        goto err;
+    }
+
+    memcpy(new_info, info, sizeof(*new_info));
+    new_info->description = NULL;
+    new_info->icon = NULL;
+
+    new_info->description = strdup(info->description);
+    if (!new_info->description) {
+        fprintf(stderr, "Failed to allocate weather info dup memory\n");
+        goto err;
+    }
+
+    new_info->icon = strdup(info->icon);
+    if (!new_info->icon) {
+        fprintf(stderr, "Failed to allocate weather info dup memory\n");
+        goto err;
+    }
+
+    return new_info;
+
+err:
+    weather_destroy_info(new_info);
+    if (new_info)
+        free(new_info);
+    return NULL;
+}
+
 void weather_destroy_info(weather_info_t *info) {
     if (!info)
         return;

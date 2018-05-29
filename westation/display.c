@@ -2,10 +2,14 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <pthread.h>
+
 #include "display.h"
 
 #define FONT_PATH "/Library/Fonts/Arial.ttf"
-// #define FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+//#define FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+pthread_mutex_t g_queue_lock;
 
 int g_sdl_initialized = 0;
 int g_img_initialized = 0;
@@ -17,10 +21,22 @@ int g_display_h = 0;
 SDL_Window *g_window = NULL;
 SDL_Renderer *g_renderer = NULL;
 
+typedef struct display_item {
+    weather_info_t *info;
+    struct display_item *next;
+} display_item_t;
+
+display_item_t *g_queue = NULL;
+
 int display_init(const char *name, int w, int h) {
     int img_flags = IMG_INIT_PNG;
     g_display_w = w;
     g_display_h = h;
+
+    if (pthread_mutex_init(&g_queue_lock, NULL) != 0) {
+        fprintf(stderr, "Failed to init queue mutex\n");
+        goto err;
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "Failed to init SDL: %s\n", SDL_GetError());
@@ -89,6 +105,8 @@ void display_destroy() {
         TTF_Quit();
         g_ttf_initialized = 0;
     }
+
+    pthread_mutex_destroy(&g_queue_lock);
 }
 
 static SDL_Texture* display_load_font_texture(const char* text, TTF_Font *font, SDL_Color *color,
@@ -134,7 +152,7 @@ static SDL_Texture* display_load_image_texture(const char* fname, SDL_Renderer *
     SDL_Texture *texture;
 
     if (!fname) {
-        fprintf(stderr, "Invalid NULL fnamein display_load_image_texture\n");
+        fprintf(stderr, "Invalid NULL fname in display_load_image_texture\n");
         return NULL;
     }
     if (!renderer) {
@@ -254,6 +272,7 @@ int display_show(const char* icon_path, const char* text, int temp, int hum) {
     }
     hum_rect.x = g_display_w - hum_rect.w - 50;
 
+    fprintf(stdout, "Redrawing screen\n");
 
     SDL_RenderClear(g_renderer);
     SDL_RenderCopy(g_renderer, icon_texture, NULL, &icon_rect);
@@ -283,6 +302,58 @@ err:
         TTF_CloseFont(font);
 
     return -1;
+}
+
+int display_queue(weather_info_t *info) {
+    display_item_t *item = malloc(sizeof(display_item_t));
+    if (!item) {
+        fprintf(stderr, "Failed to allocate memory for queue item\n");
+        return -1;
+    }
+
+    item->info = weather_dup_info(info);
+    pthread_mutex_lock(&g_queue_lock);
+    item->next = g_queue ? g_queue : NULL;
+    g_queue = item;
+    pthread_mutex_unlock(&g_queue_lock);
+
+    return 0;
+}
+
+int display_process_queue() {
+    weather_info_t *info;
+
+
+    // TODO: actually we only draw the newest item anyways, unless we 
+    // introduce more info like letting the screen redraw or not, thus
+    // allowing to queue partial updates
+
+    pthread_mutex_lock(&g_queue_lock);
+    if (!g_queue) {
+        pthread_mutex_unlock(&g_queue_lock);
+        return 0;
+    }
+
+    info = g_queue->info;
+    pthread_mutex_unlock(&g_queue_lock);
+
+    if (info) {
+        display_show(info->icon, info->description, info->temperature, info->humidity);
+    }
+
+    pthread_mutex_lock(&g_queue_lock);
+    while (g_queue) {
+        display_item_t *item;
+
+        item = g_queue;
+        g_queue = g_queue->next;
+        weather_destroy_info(item->info);
+        free(item->info);
+        free(item);
+    }
+    pthread_mutex_unlock(&g_queue_lock);
+
+    return 0;
 }
 
 

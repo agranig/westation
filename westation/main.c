@@ -27,7 +27,7 @@ static void* run_weather(void *ptr) {
 
             if (weather_get(&info) != 0) {
                 fprintf(stderr, "Failed to fetch data from weather API\n");
-                goto err;
+                goto pause;
             }
 
             fprintf(stdout, 
@@ -42,25 +42,12 @@ static void* run_weather(void *ptr) {
                     info.icon
             );
 
-            pthread_mutex_lock(&g_lock);
-            if (display_show(info.icon, info.description, info.temperature, info.humidity) != 0) {
-                fprintf(stderr, "failed to render display\n");
-                pthread_mutex_unlock(&g_lock);
-                goto err;
+            if (display_queue(&info) != 0) {
+                fprintf(stderr, "failed to queue weather info\n");
+				goto pause;
             }
-            pthread_mutex_unlock(&g_lock);
 
             weather_destroy_info(&info);
-            goto pause;
-
-err:
-            pthread_mutex_lock(&g_lock);
-            if (display_show(ICON_NA_PATH, "Weather API Error", 0, 0) != 0) {
-                fprintf(stderr, "failed to render display\n");
-                pthread_mutex_unlock(&g_lock);
-                goto err;
-            }
-            pthread_mutex_unlock(&g_lock);
         }
 
 pause:
@@ -100,14 +87,11 @@ int main(int argc, const char** argv) {
         ret = -1; goto out;
     }
 
-    // TODO: use another mutex inside display_show to avoid manual locking
-    pthread_mutex_lock(&g_lock);
     if (display_show(ICON_INIT_PATH, "Initializing...", 0, 0) != 0) {
         fprintf(stderr, "Failed to render display\n");
         pthread_mutex_unlock(&g_lock);
         goto out;
     }
-    pthread_mutex_unlock(&g_lock);
 
     if (pthread_create(&weather_thread, NULL, run_weather, NULL) != 0) {
         fprintf(stderr, "Failed to init weather thread\n");
@@ -129,6 +113,7 @@ out:
 
     weather_destroy();
     display_destroy();
+    pthread_mutex_destroy(&g_lock);
 
     return ret;
 }
