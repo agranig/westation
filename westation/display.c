@@ -214,22 +214,12 @@ int display_show(const char* icon_path, const char* text) {
     if (display_center_texture(font_texture, &font_rect) != 0) {
         fprintf(stderr, "Failed to center font texture\n");
     }
-    font_rect.y += 20;
+    font_rect.y += icon_rect.h / 2 + 20;
 
     SDL_RenderClear(g_renderer);
     SDL_RenderCopy(g_renderer, icon_texture, NULL, &icon_rect);
     SDL_RenderCopy(g_renderer, font_texture, NULL, &font_rect);
     SDL_RenderPresent(g_renderer);
-
-    int quit = 0;
-    SDL_Event e;
-    while (!quit) {
-        while (SDL_PollEvent(&e)) {
-           if (e.type == SDL_QUIT) {
-              quit = 1;
-           }
-        } 
-    }
 
     SDL_DestroyTexture(font_texture);
     SDL_DestroyTexture(icon_texture);
