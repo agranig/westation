@@ -11,6 +11,9 @@
 #define QUERY_TMPL "https://api.openweathermap.org/data/2.5/weather?" \
                           "APPID=%s&zip=%s,%s&units=%s&lang=%s"
 
+// TODO: to be defined in config
+#define ICON_ASSET_PATH "assets/meteocons-icons/PNG"
+
 CURL *g_curl = NULL;
 
 typedef struct read_buffer {
@@ -40,15 +43,13 @@ int weather_init(const char* key, const char* zip, const char* country,
     return 0;
 }
 
-int weather_destroy() {
-    if (!g_curl) {
-        return -1;
-    }
+void weather_destroy() {
+    if (!g_curl)
+        return;
+    
     curl_easy_cleanup(g_curl);
     g_curl = NULL;
     curl_global_cleanup();
-
-    return 0;
 }
 
 void weather_destroy_info(weather_info_t *info) {
@@ -58,6 +59,10 @@ void weather_destroy_info(weather_info_t *info) {
     if (info->description) {
         free(info->description);
         info->description = NULL;
+    }
+    if (info->icon) {
+        free(info->icon);
+        info->icon= NULL;
     }
 }
 
@@ -250,6 +255,7 @@ int weather_get(weather_info_t *info) {
     struct json_object *json_weathers;
     struct json_tokener *json_tok = NULL;
     weather_buffer_t buffer = {NULL, 0};
+    char icon_path_buffer[2048];
 
     if (!g_curl) {
         fprintf(stderr, "Uninitialized g_curl object, weather_init() not called?\n");
@@ -387,7 +393,13 @@ int weather_get(weather_info_t *info) {
         goto err;
     }
 
-    info->icon = weather_type_to_icon(info->type, info->time);
+    if (snprintf(icon_path_buffer, sizeof(icon_path_buffer), "%s/%s",
+            ICON_ASSET_PATH,
+            weather_type_to_icon(info->type, info->time)) >= sizeof(icon_path_buffer)) {
+        fprintf(stderr, "Failed to set icon path buffer, too small buffer size\n");
+        goto err;
+    }
+    info->icon = strdup(icon_path_buffer);
         
     json_tokener_free(json_tok);
     free(buffer.data);

@@ -1,6 +1,8 @@
 #ifndef _WEATHER_H
 #define _WEATHER_H
 
+#include <string.h>
+
 typedef enum {
     WEATHER_UNKNOWN,
     WEATHER_CLEAR,
@@ -29,7 +31,7 @@ typedef struct weather_info {
 int weather_init(const char* key, const char* zip, const char* country,
         const char* units, const char* lang);
 
-int weather_destroy();
+void weather_destroy();
 
 void weather_destroy_info(weather_info_t *info);
 
