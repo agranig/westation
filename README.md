@@ -1,3 +1,24 @@
+= About
+
+This is an educational project to refresh and learn some C skills in
+
+* SDL graphics programming
+* pthread handling
+* curl and json parsing
+* ini-style config reading
+* dlopen pluging handling
+
+Currently it only queries the OpenWeatherMap API and displays the current weather
+on screen via SDL, which - with proper SDL build - also works X-less on a RasPi.
+
+= Build and Run
+
+* Obtain an API key at https://openweathermap.org/current and place it in etc/openweathermap.key
+
+```
+make && ./westation $(cat etc/openweathermap.key | tr -d "\n")
+```
+
 = Install SDL
 
 SDL must be installed manually on Raspi, otherwise it doesn't work without X.
