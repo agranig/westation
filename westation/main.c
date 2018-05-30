@@ -6,8 +6,8 @@
 #include "display.h"
 #include "eventloop.h"
 
-#define ICON_NA_PATH "assets/meteocons-icons/PNG/45.png"
-#define ICON_INIT_PATH "assets/meteocons-icons/PNG/44.png"
+#define ICON_NA_PATH "assets/icons/45.png"
+#define ICON_INIT_PATH "assets/icons/44.png"
 
 pthread_mutex_t g_lock;
 int g_quit = 0;

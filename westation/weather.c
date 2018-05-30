@@ -12,7 +12,7 @@
                           "APPID=%s&zip=%s,%s&units=%s&lang=%s"
 
 // TODO: to be defined in config
-#define ICON_ASSET_PATH "assets/meteocons-icons/PNG"
+#define ICON_ASSET_PATH "assets/icons"
 
 CURL *g_curl = NULL;
 

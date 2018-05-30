@@ -1,4 +1,5 @@
 .*.swp
 westation/assets/meteocons-icons/SVG/*-nogrid.svg
+westation/assets/meteocons-icons/PNG/*-nogrid.png
 westation/etc/openweathermap.key
 westation/westation

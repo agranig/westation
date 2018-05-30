@@ -219,7 +219,7 @@ int display_show(const char* icon_path, const char* text, int temp, int hum) {
     SDL_Rect hum_rect;
     char buffer[128];
 
-    SDL_Color font_color = {0, 0, 0};
+    SDL_Color font_color = {255, 255, 255};
     TTF_Font* font = NULL;
     SDL_Texture *font_texture = NULL;
     SDL_Texture *icon_texture = NULL;
@@ -227,7 +227,7 @@ int display_show(const char* icon_path, const char* text, int temp, int hum) {
     SDL_Texture *temp_texture = NULL;
     SDL_Texture *hum_texture = NULL;
 
-    SDL_SetRenderDrawColor(g_renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
 
     icon_texture = display_load_image_texture(icon_path, g_renderer);
     if (!icon_texture) {
