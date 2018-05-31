@@ -6,8 +6,7 @@
 
 #include "display.h"
 
-#define FONT_PATH "/Library/Fonts/Arial.ttf"
-//#define FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+#define FONT_PATH "assets/Arial.ttf"
 
 pthread_mutex_t g_queue_lock;
 
