@@ -287,10 +287,10 @@ static weather_time_t weather_sunrise_to_time(int sunrise, int sunset, int now) 
 
 int weather_get(weather_info_t *info) {
     CURLcode res;
-    struct json_object *json_root;
     struct json_object *json_sys;
     struct json_object *json_main;
     struct json_object *json_weathers;
+    struct json_object *json_root = NULL;
     struct json_tokener *json_tok = NULL;
     weather_buffer_t buffer = {NULL, 0};
     char icon_path_buffer[2048];
@@ -477,12 +477,16 @@ int weather_get(weather_info_t *info) {
         goto err;
     }
     info->icon = strdup(icon_path_buffer);
-        
+    
+    json_object_put(json_root);    
     json_tokener_free(json_tok);
     free(buffer.data);
     return 0;
 
 err:
+    if (json_root) {
+        json_object_put(json_root);    
+    }
     if (json_tok) {
         json_tokener_free(json_tok);
     }
